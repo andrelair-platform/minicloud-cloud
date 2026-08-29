@@ -1,8 +1,8 @@
 # Remote state backend.
 #
 # Bootstrap note: the S3 bucket + DynamoDB lock table are created in story #298.
-# Until they exist, Terraform runs on LOCAL state (this file's block stays
-# commented). Once #298 lands, uncomment + `terraform init -migrate-state`.
+# Until they exist, OpenTofu runs on LOCAL state (this file's block stays
+# commented). Once #298 lands, uncomment + `tofu init -migrate-state`.
 #
 # terraform {
 #   backend "s3" {

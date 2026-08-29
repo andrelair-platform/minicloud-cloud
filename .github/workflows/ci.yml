@@ -10,25 +10,25 @@ permissions:
   contents: read
 
 jobs:
-  # L0 — static: fmt + validate + lint. No cloud credentials required
+  # L0 — static: fmt + validate + lint (OpenTofu). No cloud credentials required
   # (init/validate download providers but never contact the cloud).
   static:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: opentofu/setup-opentofu@v1
         with:
-          terraform_version: "1.9.8"
+          tofu_version: "1.8.7"
 
-      - name: terraform fmt (check)
-        run: terraform fmt -check -recursive
+      - name: tofu fmt (check)
+        run: tofu fmt -check -recursive
 
-      - name: terraform init (no backend)
-        run: terraform init -backend=false
+      - name: tofu init (no backend)
+        run: tofu init -backend=false
 
-      - name: terraform validate
-        run: terraform validate
+      - name: tofu validate
+        run: tofu validate
 
       - uses: terraform-linters/setup-tflint@v4
         with:
