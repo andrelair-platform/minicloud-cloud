@@ -47,14 +47,27 @@ modules/        # bedrock, azure-openai (added in #303/#304)
 ```
 
 ## Getting started
+
+**Static checks (no creds):**
 ```bash
 tofu fmt -recursive
 tofu init -backend=false
 tofu validate
 tflint --recursive
 ```
-Real runs require Vault-sourced creds (scoped AWS IAM user + Azure Service
-Principal — story #299) and the S3 backend (#298).
+
+**Real runs (on the controller — creds from Vault, never in git):**
+```bash
+source scripts/load-env.sh   # exports AWS + ARM_* from Vault (no secrets in this repo)
+tofu init                    # S3 backend
+tofu plan
+tofu apply
+```
+Credentials live **only in Vault** (`secret/platform/cloud-providers`): AWS =
+`minicloud-tofu` (`aws-tofu-*`; the root key is deactivated), Azure = Service
+Principal `minicloud-tofu-azure` (`azure-*`). The Bedrock **runtime** user for
+LiteLLM is `litellm-bedrock` (`aws-bedrock-*`). Never commit creds / `*.tfvars`
+/ state.
 
 ## Roadmap (platform-backlog milestone #17)
 - **#297** repo scaffold *(this)* · **#298** S3+DynamoDB state · **#299** creds (IAM+SP) · **#300** budgets (€15)
