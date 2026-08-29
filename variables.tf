@@ -4,14 +4,6 @@ variable "aws_region" {
   default     = "eu-west-1" # Ireland — broadest Bedrock coverage in the EU
 }
 
-variable "budget_alert_email" {
-  description = "Email that receives AWS Budgets / Azure Cost alerts (story #300)."
-  type        = string
-  default     = "kanmegnea@gmail.com"
-}
-
-variable "monthly_budget_eur" {
-  description = "Per-provider soft cap; alert fires at this amount (story #300)."
-  type        = number
-  default     = 8
-}
+# Budget variables (budget_alert_email, monthly_budget_eur) are added in story
+# #300 together with the AWS Budgets / Azure Cost resources that consume them —
+# tflint flags unused declarations, so they're intentionally not declared yet.
