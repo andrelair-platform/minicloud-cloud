@@ -44,3 +44,7 @@ variable "oci_dr_node_memory_gb" {
   type    = number
   default = 12
 }
+variable "oci_budget_email" {
+  type    = string
+  default = "kanmegnea@gmail.com"
+}
