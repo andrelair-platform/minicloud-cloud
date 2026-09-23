@@ -13,5 +13,9 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    oci = {
+      source  = "oracle/oci"
+      version = "~> 6.0"
+    }
   }
 }
