@@ -31,6 +31,22 @@ else
   export ARM_TENANT_ID="$(_cp_get azure-tenant-id)"
   export ARM_SUBSCRIPTION_ID="$(_cp_get azure-subscription-id)"
 
-  unset _cp_json _vault_tok
+  # OCI (API key → oci provider reads TF_VAR_oci_* vars). Creds in secret/platform/oci.
+  _oci_json="$(curl -sk -H "X-Vault-Token: $_vault_tok" "$_vault_addr/v1/secret/data/platform/oci")"
+  if printf '%s' "$_oci_json" | grep -q '"private_key"'; then
+    _oci_get() { printf '%s' "$_oci_json" | python3 -c "import sys,json;print(json.load(sys.stdin)['data']['data']['$1'])"; }
+    export TF_VAR_oci_tenancy_ocid="$(_oci_get tenancy_ocid)"
+    export TF_VAR_oci_user_ocid="$(_oci_get user_ocid)"
+    export TF_VAR_oci_fingerprint="$(_oci_get fingerprint)"
+    export TF_VAR_oci_region="$(_oci_get region)"
+    export TF_VAR_oci_compartment_ocid="$(_oci_get compartment_ocid)"
+    export TF_VAR_oci_private_key="$(_oci_get private_key)"
+    export TF_VAR_oci_ssh_public_key="$(_oci_get ssh_public_key)"
+    echo "load-env: OCI creds loaded (secret/platform/oci) — ready for tofu"
+  else
+    echo "load-env: no OCI creds in Vault yet (secret/platform/oci) — OCI resources will no-op"
+  fi
+
+  unset _cp_json _oci_json _vault_tok
   echo "load-env: creds loaded from Vault (AWS=minicloud-tofu · Azure SP) — ready for tofu"
 fi
