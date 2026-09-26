@@ -17,5 +17,9 @@ terraform {
       source  = "oracle/oci"
       version = "~> 6.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4"
+    }
   }
 }

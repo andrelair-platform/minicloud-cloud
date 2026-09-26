@@ -14,3 +14,8 @@ override.tf.json
 terraform.rc
 # keep the lock file committed:
 !.terraform.lock.hcl
+# Lambda build artifacts (archive_file output — aws-heartbeat.tf)
+.build/
+# Python bytecode
+__pycache__/
+*.pyc
