@@ -47,6 +47,21 @@ else
     echo "load-env: no OCI creds in Vault yet (secret/platform/oci) — OCI resources will no-op"
   fi
 
+  # Azure Education (acct 3, ynov.com tenant) → the gated azure-education-budget.tf.
+  # SEPARATE subscription/tenant from the PAYG SP above (never azurerm_subscription.current).
+  # Keys are OPTIONAL: absent → the four TF_VARs stay empty → the budget's count=0 (inert).
+  # Add all four (azure-edu-subscription-id / -tenant-id / -client-id / -client-secret) to
+  # secret/platform/cloud-providers to activate. See .claude/rules/cloud-adoption.md (*Our accounts*).
+  if printf '%s' "$_cp_json" | grep -q '"azure-edu-subscription-id"'; then
+    export TF_VAR_azure_education_subscription_id="$(_cp_get azure-edu-subscription-id)"
+    export TF_VAR_azure_education_tenant_id="$(_cp_get azure-edu-tenant-id)"
+    export TF_VAR_azure_education_client_id="$(_cp_get azure-edu-client-id)"
+    export TF_VAR_azure_education_client_secret="$(_cp_get azure-edu-client-secret)"
+    echo "load-env: Azure Education creds loaded (azure-edu-*) — Education budget will provision"
+  else
+    echo "load-env: no Azure Education creds yet (azure-edu-* in secret/platform/cloud-providers) — Education budget stays inert"
+  fi
+
   unset _cp_json _oci_json _vault_tok
   echo "load-env: creds loaded from Vault (AWS=minicloud-tofu · Azure SP) — ready for tofu"
 fi
