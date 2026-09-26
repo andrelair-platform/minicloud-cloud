@@ -1,3 +1,11 @@
+# ⚠️ STATUS 2026-09-26 — NOT the active path. The live "minicloud-education-monthly" budget was
+# created MANUALLY via `az rest` (user auth) because the ynov.com student tenant blocks service-
+# principal / app-registration creation (the SP-based IaC path below is unusable there). This file
+# is retained as an INERT reference + a future `tofu import` target: the manual budget is named
+# identically, so `tofu import azurerm_consumption_budget_subscription.education <id>` adopts it
+# cleanly if an SP ever becomes available. Do NOT treat this as live IaC. Recreate command:
+#   az rest --method PUT --url ".../providers/Microsoft.Consumption/budgets/minicloud-education-monthly?api-version=2023-11-01" --body @edu-budget.json
+#
 # Education subscription budget (acct 3) — the Azure Education account is a SEPARATE
 # subscription/tenant from the PAYG one that budgets.tf covers, so it needs its OWN alert.
 # The $100 credit can't overshoot into a bank account, but this is the tripwire that tells
