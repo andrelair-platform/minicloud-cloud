@@ -1,7 +1,11 @@
 # ADR-0002 — Always-free external heartbeat + public status page (external observability anchor)
 
-**Status:** Proposed (decision) · **provisioning NOT started** (plan only — awaiting owner approval)
-**Date:** 2026-09-26
+**Status:** Accepted (Option B) · **IaC written, NOT applied** (plan only — `enable_heartbeat=false`)
+**Date:** 2026-09-26 · **Impl:** `aws-heartbeat.tf` + `lambda/heartbeat/handler.py`
+**Refinement:** the status page is served by a **Lambda Function URL**, not S3 + CloudFront as first
+sketched below — a Function URL is *strictly* always-free (S3's 5 GB is only 12-month) and lower-surface,
+and still survives total-site loss. A custom domain (`status.devandre.sbs` via CloudFront + ACM) is a
+deferred optional enhancement; the `*.lambda-url` host already meets the resilience goal.
 **Context:** Reliability audit (2026-09-26) found an **external-observability blind spot**: monitoring
 (Prometheus/Grafana/Alertmanager) runs *inside* the cluster, and CoreDNS + the API server are both on
 the single control-plane node `set-hog`. **A cluster cannot monitor its own death** — if `set-hog`, the
