@@ -108,7 +108,10 @@ resource "aws_iam_policy" "data_lake_read" {
   })
 }
 
-# WRITER — domain producers: put under raw/* only (no delete, no read of others' prefixes).
+# WRITER — domain producers: own raw/* (put + the GetObject/multipart ops the writer engine needs).
+# NOTE: scoped to raw/* only — no read of other prefixes (curated/business), no delete. GetObject is
+# required because the DuckDB httpfs writer issues a HEAD (s3:GetObject) on the target before writing;
+# a pure PutObject policy 403s the write. AbortMultipartUpload covers multi-part uploads of large tables.
 resource "aws_iam_policy" "data_lake_write" {
   name        = "ktayl-data-lake-write"
   description = "Write access to raw/* of the ktayl data-lake bucket (domain producers; via Vault STS)."
@@ -118,14 +121,19 @@ resource "aws_iam_policy" "data_lake_write" {
       {
         Sid       = "ListBucket"
         Effect    = "Allow"
-        Action    = ["s3:ListBucket"]
+        Action    = ["s3:ListBucket", "s3:ListBucketMultipartUploads"]
         Resource  = aws_s3_bucket.data_lake.arn
         Condition = { StringLike = { "s3:prefix" = ["raw/*"] } }
       },
       {
-        Sid      = "WriteRawObjects"
-        Effect   = "Allow"
-        Action   = ["s3:PutObject"]
+        Sid    = "WriteRawObjects"
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",            # DuckDB httpfs HEADs the target before writing
+          "s3:AbortMultipartUpload", # clean up failed multipart uploads of large tables
+          "s3:ListMultipartUploadParts",
+        ]
         Resource = "${aws_s3_bucket.data_lake.arn}/raw/*"
       }
     ]
