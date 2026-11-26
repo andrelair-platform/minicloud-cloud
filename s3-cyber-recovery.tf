@@ -52,13 +52,16 @@ resource "aws_s3_bucket_versioning" "cyber_recovery" {
   versioning_configuration { status = "Enabled" }
 }
 
-# Object Lock — default retention on EVERY put. GOVERNANCE first (privileged bypass for mistake
-# correction during validation); flip mode to "COMPLIANCE" once a restore drill proves the cadence.
+# Object Lock — default retention on EVERY put. **COMPLIANCE** (since 2026-11-26, after the restore drill
+# proved the cadence): NO one — not the Writer, not an admin, not root — can delete or shorten retention
+# before it expires. This is the anti-ransomware guarantee. Consequence: the bucket cannot be `tofu
+# destroy`ed while COMPLIANCE-locked objects < 35d exist (exit = stop writes, wait out retention, destroy).
+# (Was GOVERNANCE during validation; the flip is a one-way door.)
 resource "aws_s3_bucket_object_lock_configuration" "cyber_recovery" {
   bucket = aws_s3_bucket.cyber_recovery.id
   rule {
     default_retention {
-      mode = "GOVERNANCE"
+      mode = "COMPLIANCE"
       days = local.cyber_recovery_retention_days
     }
   }
