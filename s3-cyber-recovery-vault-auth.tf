@@ -12,7 +12,7 @@
 # ---- WRITER role Vault assumes to push the crown jewels (add-only) ----------
 resource "aws_iam_role" "cyber_recovery_writer" {
   name        = "ktayl-cyber-recovery-writer"
-  description = "Assumed (via Vault) by the crown-jewels push job — add-only write to the cyber-recovery vault. No delete, no lock-bypass."
+  description = "Assumed (via Vault) by the crown-jewels push job - add-only write to the cyber-recovery vault. No delete, no lock-bypass."
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
