@@ -51,3 +51,39 @@ output "cyber_recovery_writer_role_arn" {
   description = "Role ARN Vault assumes for the crown-jewels push STS creds (aws/roles/cyber-recovery-write)."
   value       = aws_iam_role.cyber_recovery_writer.arn
 }
+
+# ---- break-glass RECOVERY identity (ADR-0003 — off-cluster recovery) --------
+# In a cyber-recovery scenario the on-cluster Vault may be GONE, so the recovery creds must NOT be minted
+# by Vault (circular) — they are a STATIC, least-privilege key stored OFF-cluster (age-encrypted on the
+# controller + Vaultwarden break-glass, like the Vault crown jewels). This identity can do exactly the two
+# things a disaster restore needs and nothing else: READ the vault (recover the snapshot) + kms:Decrypt the
+# Vault seal key (unseal the restored Vault). The access key is created out-of-band (NOT in tofu state).
+resource "aws_iam_user" "cyber_recovery_break_glass" {
+  name = "cyber-recovery-break-glass"
+  tags = { component = "backup-dr", layer = "cyber-recovery", purpose = "break-glass-recovery" }
+}
+
+resource "aws_iam_user_policy_attachment" "cyber_recovery_break_glass_read" {
+  user       = aws_iam_user.cyber_recovery_break_glass.name
+  policy_arn = aws_iam_policy.cyber_recovery_read.arn # S3 read of the vault
+}
+
+# kms:Decrypt on the Vault seal key — so the break-glass identity can unseal a restored Vault off-cluster.
+resource "aws_iam_user_policy" "cyber_recovery_break_glass_kms" {
+  name = "unseal-vault-kms-decrypt"
+  user = aws_iam_user.cyber_recovery_break_glass.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid      = "UnsealVaultKms"
+      Effect   = "Allow"
+      Action   = ["kms:Encrypt", "kms:Decrypt", "kms:GenerateDataKey", "kms:DescribeKey"]
+      Resource = "arn:aws:kms:eu-west-1:625830750465:key/a562e4a3-3708-4656-b2f9-365a073f6457"
+    }]
+  })
+}
+
+output "cyber_recovery_break_glass_user" {
+  description = "IAM user for off-cluster disaster recovery (read vault + kms:Decrypt). Key created out-of-band, stored off-cluster."
+  value       = aws_iam_user.cyber_recovery_break_glass.name
+}
