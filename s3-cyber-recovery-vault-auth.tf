@@ -77,7 +77,7 @@ resource "aws_iam_user_policy" "cyber_recovery_break_glass_kms" {
     Statement = [{
       Sid      = "UnsealVaultKms"
       Effect   = "Allow"
-      Action   = ["kms:Decrypt", "kms:DescribeKey"]
+      Action   = ["kms:Encrypt", "kms:Decrypt", "kms:GenerateDataKey", "kms:DescribeKey"]
       Resource = "arn:aws:kms:eu-west-1:625830750465:key/a562e4a3-3708-4656-b2f9-365a073f6457"
     }]
   })
